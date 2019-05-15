@@ -10,10 +10,36 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
+#include <linux/buffer_head.h>
+#include <linux/list.h>
+#include <linux/types.h>
 
 #include "ouichefs.h"
 
+static struct buffer_head *bh, *b;
 
+void deduplicate_blocks(struct super_block *sb)
+{
+	struct inode* inode;
+	struct ouichefs_inode_info *info;
+	int i, index_block;
+
+	pr_info("before list\n");
+	list_for_each_entry(inode, &sb->s_inodes, i_lru){
+		if (S_ISDIR(inode->i_mode))
+			continue;
+
+		info = OUICHEFS_INODE(inode);
+		index_block = info->index_block;
+		bh = sb_bread(sb, index_block);
+		pr_info("Bloc index %d : ", index_block);
+
+		i = 0;
+		for (i = 0; i < inode->i_blocks; i++)
+			pr_info("%d ", bh->b_data[i]);
+ 		pr_info("\n");
+	}
+}
 
 /*
  * Mount a ouiche_fs partition
@@ -38,8 +64,9 @@ struct dentry *ouichefs_mount(struct file_system_type *fs_type, int flags,
  */
 void ouichefs_kill_sb(struct super_block *sb)
 {
-	deduplicate_blocks();
+	deduplicate_blocks(sb);
 	kill_block_super(sb);
+	brelse(bh);
 
 	pr_info("unmounted disk\n");
 }
@@ -77,7 +104,7 @@ end:
 static void __exit ouichefs_exit(void)
 {
 	int ret;
-
+	
 	ret = unregister_filesystem(&ouichefs_file_system_type);
 	if (ret)
 		pr_err("unregister_filesystem() failed\n");
