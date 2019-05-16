@@ -75,7 +75,7 @@ static void show_inodes_of_superblock(struct super_block* sb, void* arg) {
       i_blk++;
     }
     print_buf(out, "\n");
-    brelse(bh_index);
+//    brelse(bh_index);
   }
 
   return;
