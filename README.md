@@ -4,12 +4,13 @@ Fonctions utiles :
 
 Monter/démonter un FS : (Documentation/filesystem/vfs.txt l.89)
 
+```c
 #include <linux/fs.h>
 
    extern int register_filesystem(struct file_system_type *);
    extern int unregister_filesystem(struct file_system_type *);
-  
-Avec struct file_system_type qui décrit notre fs (TRES IMPORTANT : voir l.108 pour les détails)
+
+// Avec struct file_system_type qui décrit notre fs (TRES IMPORTANT : voir l.108 pour les détails)
 
 struct file_system_type {
 	const char *name;
@@ -22,7 +23,7 @@ struct file_system_type {
         struct list_head fs_supers;
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;
-};   
+};
 
 
 struc super_operations rassemblant les fonctions de manipulation d'un super_block
@@ -51,5 +52,4 @@ struct super_operations {
 	int (*nr_cached_objects)(struct super_block *);
 	void (*free_cached_objects)(struct super_block *, int);
 };
-
-
+```
