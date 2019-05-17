@@ -55,5 +55,4 @@ dkms.conf
 # Other
 mkfs/test.img
 *.img
-*.sh
 tags

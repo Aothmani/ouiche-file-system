@@ -97,9 +97,11 @@ static void ouichefs_put_super(struct super_block *sb)
 {
 	struct ouichefs_sb_info *sbi = OUICHEFS_SB(sb);
 
-	kfree(sbi->ifree_bitmap);
-	kfree(sbi->bfree_bitmap);
-	kfree(sbi);
+	if (sbi) {
+		kfree(sbi->ifree_bitmap);
+		kfree(sbi->bfree_bitmap);
+		kfree(sbi);
+	}
 }
 
 static int ouichefs_sync_fs(struct super_block *sb, int wait)
@@ -107,7 +109,6 @@ static int ouichefs_sync_fs(struct super_block *sb, int wait)
 	struct buffer_head *bh;
 	struct ouichefs_sb_info *sbi = OUICHEFS_SB(sb);
 	struct ouichefs_sb_info *disk_sb;
-	uint64_t *bitmap;
 	int i;
 
 	/* Flush superblock */
@@ -136,9 +137,9 @@ static int ouichefs_sync_fs(struct super_block *sb, int wait)
 		bh = sb_bread(sb, idx);
 		if (!bh)
 			return -EIO;
-		bitmap = (uint64_t *)bh->b_data;
 
-		memcpy(bitmap, sbi->ifree_bitmap + i * OUICHEFS_BLOCK_SIZE,
+		memcpy(bh->b_data,
+		       (void *)sbi->ifree_bitmap + i * OUICHEFS_BLOCK_SIZE,
 		       OUICHEFS_BLOCK_SIZE);
 
 		mark_buffer_dirty(bh);
@@ -154,9 +155,9 @@ static int ouichefs_sync_fs(struct super_block *sb, int wait)
 		bh = sb_bread(sb, idx);
 		if (!bh)
 			return -EIO;
-		bitmap = (uint64_t *)bh->b_data;
 
-		memcpy(bitmap, sbi->bfree_bitmap + i * OUICHEFS_BLOCK_SIZE,
+		memcpy(bh->b_data,
+		       (void *)sbi->bfree_bitmap + i * OUICHEFS_BLOCK_SIZE,
 		       OUICHEFS_BLOCK_SIZE);
 
 		mark_buffer_dirty(bh);
@@ -248,17 +249,15 @@ int ouichefs_fill_super(struct super_block *sb, void *data, int silent)
 	}
 	for (i = 0; i < sbi->nr_ifree_blocks; i++) {
 		int idx = sbi->nr_istore_blocks + i + 1;
-		uint64_t *bitmap;
 
 		bh = sb_bread(sb, idx);
 		if (!bh) {
 			ret = -EIO;
 			goto free_ifree;
 		}
-		bitmap = (uint64_t *)bh->b_data;
 
-		memcpy(sbi->ifree_bitmap + i * OUICHEFS_BLOCK_SIZE,
-		       bitmap, OUICHEFS_BLOCK_SIZE);
+		memcpy((void *)sbi->ifree_bitmap + i * OUICHEFS_BLOCK_SIZE,
+		       bh->b_data, OUICHEFS_BLOCK_SIZE);
 
 		brelse(bh);
 	}
@@ -272,17 +271,15 @@ int ouichefs_fill_super(struct super_block *sb, void *data, int silent)
 	}
 	for (i = 0; i < sbi->nr_bfree_blocks; i++) {
 		int idx = sbi->nr_istore_blocks + sbi->nr_ifree_blocks + i + 1;
-		uint64_t *bitmap;
 
 		bh = sb_bread(sb, idx);
 		if (!bh) {
 			ret = -EIO;
 			goto free_bfree;
 		}
-		bitmap = (uint64_t *)bh->b_data;
 
-		memcpy(sbi->bfree_bitmap + i * OUICHEFS_BLOCK_SIZE,
-		       bitmap, OUICHEFS_BLOCK_SIZE);
+		memcpy((void *)sbi->bfree_bitmap + i * OUICHEFS_BLOCK_SIZE,
+		       bh->b_data, OUICHEFS_BLOCK_SIZE);
 
 		brelse(bh);
 	}
