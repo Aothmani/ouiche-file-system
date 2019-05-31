@@ -132,12 +132,13 @@ static int ouichefs_write_end(struct file *file, struct address_space *mapping,
 			      loff_t pos, unsigned int len, unsigned int copied,
 			      struct page *page, void *fsdata)
 {
-	int ret;
+  int ret, i;
+	struct buffer_head *bh_index;
 	struct inode *inode = file->f_inode;
 	struct ouichefs_inode_info *ci = OUICHEFS_INODE(inode);
 	struct super_block *sb = inode->i_sb;
-        struct ouichefs_file_index_block* fib;
-        SHA256_CTX ctx;
+        struct ouichefs_file_index_block* fib, *data;
+	SHA256_CTX ctx;
 
 	/* Complete the write() */
 	ret = generic_write_end(file, mapping, pos, len, copied, page, fsdata);
@@ -157,23 +158,20 @@ static int ouichefs_write_end(struct file *file, struct address_space *mapping,
                 bh_index = sb_bread(sb, ci->index_block);
                 fib = (struct ouichefs_file_index_block *)bh_index->b_data;
                 for(i = 0; i < inode->i_blocks - 2; i++){
-                  struct ouichefs_file_index_block* data;
-                  data = struct ouichefs_file_index_block*)
-                    sb_bread(sb, fib->blocks[i]);
+			data = (struct ouichefs_file_index_block *)(sb_bread(sb, fib->blocks[i]));
                   /* Calcul du hash du block */
                      sha256_init(&ctx);
-                     sha256_update(&ctx, data->blocks, OUICHEFS_BLOCK_SIZE);
+                     sha256_update(&ctx, (char *)data->blocks, OUICHEFS_BLOCK_SIZE);
                      sha256_final(&ctx, data->hash);
                 }
-                data = struct ouichefs_file_index_block*)
+                data = (struct ouichefs_file_index_block*)
                     sb_bread(sb, fib->blocks[i]);
                 sha256_init(&ctx);
-                sha256_update(&ctx, data->blocks, OUICHEFS_BLOCK_SIZE);
+                sha256_update(&ctx, (char *)data->blocks, OUICHEFS_BLOCK_SIZE);
                 sha256_final(&ctx, data->hash);
 
 		/* If file is smaller than before, free unused blocks */
 		if (nr_blocks_old > inode->i_blocks) {
-			int i;
 			struct buffer_head *bh_index;
 			struct ouichefs_file_index_block *index;
 

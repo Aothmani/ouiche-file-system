@@ -18,19 +18,7 @@
 
 static struct buffer_head *bh, *b;
 
-int simple_hash(char *data, int size){
-	int i;
-      	if (size == OUICHEFS_BLOCK_SIZE) {
-		char * hash[64];
-
-		}
-		return hash;
-	} else {
-
-	}
-}
-
-void deduplicate_blocks(struct super_block *sb)
+/* void deduplicate_blocks(struct super_block *sb)
 {
 	struct inode *inode
 	struct ouichefs_sb_info *sb_info;
@@ -63,7 +51,7 @@ void deduplicate_blocks(struct super_block *sb)
 			file_block = (struct ouichefs_file_index_block *)bh->data;
 			while (file_block->blocks[j] != 0){
 				b = sb_bread(sb, file_block->blocks[j]);
-				if (/* fct de recherche dans la liste de blocs search(b...) */) {
+				if (fct de recherche dans la liste de blocs search(b...) ) {
 
 				} else {
 
@@ -76,7 +64,7 @@ void deduplicate_blocks(struct super_block *sb)
 
 
 	}
-	/*
+
 	list_for_each_entry(inode, &sb->s_inodes, i_lru){
 		if (S_ISDIR(inode->i_mode))
 			continue;
@@ -91,8 +79,8 @@ void deduplicate_blocks(struct super_block *sb)
 			pr_info("%d ", bh->b_data[i]);
  		pr_info("\n");
 	}
-	*/
-}
+	
+} */
 
 /*
  * Mount a ouiche_fs partition
@@ -117,7 +105,7 @@ struct dentry *ouichefs_mount(struct file_system_type *fs_type, int flags,
  */
 void ouichefs_kill_sb(struct super_block *sb)
 {
-	deduplicate_blocks(sb);
+  //deduplicate_blocks(sb);
 	kill_block_super(sb);
 	brelse(bh);
 
