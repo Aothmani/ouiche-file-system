@@ -18,6 +18,18 @@
 
 static struct buffer_head *bh, *b;
 
+int simple_hash(char *data, int size){
+	int i;
+      	if (size == OUICHEFS_BLOCK_SIZE) {
+		char * hash[64];
+
+		}
+		return hash;
+	} else {
+		
+	}
+}
+
 void deduplicate_blocks(struct super_block *sb)
 {
 	struct inode *inode
