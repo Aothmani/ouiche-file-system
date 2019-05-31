@@ -53,3 +53,22 @@ struct super_operations {
 	void (*free_cached_objects)(struct super_block *, int);
 };
 ```
+
+# Setup ouichefs
+
+On créé une image de 50Mo pour le filesystem:
+
+```
+dd if=/dev/zero of=ouichefs.img bs=1M count=50
+mkfs.ouichfs ouichefs.img
+```
+
+Pour monter et démonter le system de fichier utilisez les scripts `mnt.sh` et
+`unmnt.sh`
+
+# Sysfs
+
+Nous avons créé un `sysfs` pour pouvoir lister l'ensemble des block utilisé pour
+chaque inode du système de fichier:
+
+Pour cela on récupère le nombre de d'inode utilisé

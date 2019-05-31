@@ -15,6 +15,7 @@
 #include <linux/buffer_head.h>
 #include <linux/kobject.h>
 #include "ouichefs.h"
+#include "bitmap.h"
 
 /*
  * Sysfs ouichefs
@@ -74,6 +75,10 @@ static void show_inodes_of_superblock(struct super_block* sb, void* arg) {
       print_buf(out, "%d ", index->blocks[i_blk]);
       i_blk++;
     }
+
+    // put inode and block
+    brelse(bh_index);
+    ouichefs_sync_fs(sb, 5);
     print_buf(out, "\n");
 //    brelse(bh_index);
   }
@@ -180,9 +185,16 @@ end:
 	return ret;
 }
 
+static void dedup() {
+
+
+}
+
 static void __exit ouichefs_exit(void)
 {
 	int ret;
+
+        dedup();
 
 	ret = unregister_filesystem(&ouichefs_file_system_type);
 	if (ret)
