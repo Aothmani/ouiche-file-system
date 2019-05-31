@@ -26,7 +26,7 @@ int simple_hash(char *data, int size){
 		}
 		return hash;
 	} else {
-		
+
 	}
 }
 
@@ -44,7 +44,7 @@ void deduplicate_blocks(struct super_block *sb)
 
 	for (i = 0; i < 1024; i++)
 		blocks[i] = 0;
-	
+
 	pr_info("before list\n");
 
 	sb_info = OUICHEFS_SB(sb);
@@ -58,24 +58,23 @@ void deduplicate_blocks(struct super_block *sb)
 		i_info = OUICHEFS_INODE(inode);
 
 		if(S_ISDIR(inode->imode)) {
-			
 		} else if (S_ISREG(inode->imode)) {
 			bh = sb_bread(sb, i_info->index_block);
 			file_block = (struct ouichefs_file_index_block *)bh->data;
 			while (file_block->blocks[j] != 0){
 				b = sb_bread(sb, file_block->blocks[j]);
 				if (/* fct de recherche dans la liste de blocs search(b...) */) {
-					
+
 				} else {
-					
+
 				}
 				j++;
 			}
 		} else {
 			pr_warn("Error : wrong i_mode\n");
 		}
-		
-		
+
+
 	}
 	/*
 	list_for_each_entry(inode, &sb->s_inodes, i_lru){
@@ -158,7 +157,7 @@ end:
 static void __exit ouichefs_exit(void)
 {
 	int ret;
-	
+
 	ret = unregister_filesystem(&ouichefs_file_system_type);
 	if (ret)
 		pr_err("unregister_filesystem() failed\n");

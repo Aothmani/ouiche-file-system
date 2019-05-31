@@ -4,8 +4,11 @@
  *
  * Copyright (C) 2018 Redha Gouicem <redha.gouicem@lip6.fr>
  */
+
 #ifndef _OUICHEFS_H
 #define _OUICHEFS_H
+
+#include "sha256.h"
 
 #define OUICHEFS_MAGIC  0x48434957
 
@@ -75,6 +78,7 @@ struct ouichefs_sb_info {
 };
 
 struct ouichefs_file_index_block {
+        char[SHA256_BLOC_SIZE] hash;            /* Hash of blocks */
 	uint32_t blocks[OUICHEFS_BLOCK_SIZE >> 2];
 };
 
