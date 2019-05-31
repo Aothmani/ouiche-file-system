@@ -20,11 +20,52 @@ static struct buffer_head *bh, *b;
 
 void deduplicate_blocks(struct super_block *sb)
 {
-	struct inode* inode;
-	struct ouichefs_inode_info *info;
-	int i, index_block;
+	struct inode *inode
+	struct ouichefs_sb_info *sb_info;
+	struct ouichefs_inode_info *i_info;
+	struct ouichefs_dir_block *dir_block;
+	struct ouichefs_file_index_block *file_block;
+	int i, j;
+	int offset, ino, index_block, nr_used_inodes, blockno;
+	unsigned long *i_free_bitmap;
+	int blocks[1024];
 
+	for (i = 0; i < 1024; i++)
+		blocks[i] = 0;
+	
 	pr_info("before list\n");
+
+	sb_info = OUICHEFS_SB(sb);
+	i_free_bitmap = sb_info->i_free_bitmap;
+	nr_used_inodes = sb_info->nr_inodes - sb_info->nr_free_inodes;
+
+	offset = 0;
+	for (i = 0; i < nr_used_inodes ; i++) {
+		ino = find_next_zero_bit(i_free_bitmap, sb_info->nr_inodes, offset);
+		inode = ouichefs_iget(sb, ino);
+		i_info = OUICHEFS_INODE(inode);
+
+		if(S_ISDIR(inode->imode)) {
+			
+		} else if (S_ISREG(inode->imode)) {
+			bh = sb_bread(sb, i_info->index_block);
+			file_block = (struct ouichefs_file_index_block *)bh->data;
+			while (file_block->blocks[j] != 0){
+				b = sb_bread(sb, file_block->blocks[j]);
+				if (/* fct de recherche dans la liste de blocs search(b...) */) {
+					
+				} else {
+					
+				}
+				j++;
+			}
+		} else {
+			pr_warn("Error : wrong i_mode\n");
+		}
+		
+		
+	}
+	/*
 	list_for_each_entry(inode, &sb->s_inodes, i_lru){
 		if (S_ISDIR(inode->i_mode))
 			continue;
@@ -39,6 +80,7 @@ void deduplicate_blocks(struct super_block *sb)
 			pr_info("%d ", bh->b_data[i]);
  		pr_info("\n");
 	}
+	*/
 }
 
 /*
