@@ -15,6 +15,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/slab.h>
+#include <asm/bitops.h>
 
 #include "ouichefs.h"
 
@@ -73,18 +74,19 @@ void deduplicate_blocks(struct super_block *sb)
 	sb_info = OUICHEFS_SB(sb);
 	i_free_bitmap = sb_info->ifree_bitmap;
 	nr_used_inodes = sb_info->nr_inodes - sb_info->nr_free_inodes;
-
+	
 	offset = 0;
 	pr_info("Before for : nr_used_inodes = %d\n", nr_used_inodes);
-	for (i = 0; i < nr_used_inodes ; i++) {
-		ino = find_next_zero_bit(i_free_bitmap, sb_info->nr_inodes, offset);
+	for_each_clear_bit(ino, i_free_bitmap, sb_info->nr_inodes) {
+		//ino = find_next_zero_bit(sb_info->ifree_bitmap, sb_info->nr_inodes, offset);
+		pr_info("ino = %d\n", ino);
 		inode = ouichefs_iget(sb, ino);
 		i_info = OUICHEFS_INODE(inode);
-		pr_info("Before isreg = %d\n", inode->i_mode);
 		if (S_ISREG(inode->i_mode)) {
 			pr_info("isreg\n");
 			bh = sb_bread(sb, i_info->index_block);
 			file_block = (struct ouichefs_file_index_block *)bh->b_data;
+			pr_info("number of blocks of file inode = %d\n", inode->i_blocks);
 			for (j = 0; j < inode->i_blocks - 2; j++){
 				b = sb_bread(sb, file_block->blocks[j]);
 				data_block =
