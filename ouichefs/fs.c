@@ -13,74 +13,112 @@
 #include <linux/buffer_head.h>
 #include <linux/list.h>
 #include <linux/types.h>
+#include <linux/string.h>
+#include <linux/slab.h>
 
 #include "ouichefs.h"
 
-static struct buffer_head *bh, *b;
+struct ouichefs_hashtable {
+	char hash[SHA256_BLOCK_SIZE];
+	struct list_head hash_list;
+	struct ouichefs_block *block_head;
+};
 
-/* void deduplicate_blocks(struct super_block *sb)
+struct ouichefs_block {
+	struct list_head block_list;
+	int blockno;
+};
+
+struct ouichefs_hashtable *create_new_hashtable(char *hash)
 {
-	struct inode *inode
-	struct ouichefs_sb_info *sb_info;
-	struct ouichefs_inode_info *i_info;
-	struct ouichefs_dir_block *dir_block;
-	struct ouichefs_file_index_block *file_block;
-	int i, j;
+	struct ouichefs_hashtable *hashtable;
+	struct ouichefs_block *block;
+
+	hashtable = kmalloc(sizeof(struct ouichefs_hashtable), GFP_KERNEL);
+	block = kmalloc(sizeof(struct ouichefs_block), GFP_KERNEL);
+	strcpy(hashtable->hash, hash);
+	hashtable->block_head = block;
+	INIT_LIST_HEAD(&hashtable->block_head->block_list);
+
+	return hashtable;
+}
+
+struct ouichefs_block *create_new_block(uint32_t blockno)
+{
+	struct ouichefs_block *new_block;
+
+	new_block = kmalloc(sizeof(struct ouichefs_block), GFP_KERNEL);
+	new_block->blockno = blockno;
+	return new_block;
+}
+
+void deduplicate_blocks(struct super_block *sb)
+{
+
+	int i, j, added;
 	int offset, ino, index_block, nr_used_inodes, blockno;
 	unsigned long *i_free_bitmap;
-	int blocks[1024];
+	
+	struct inode *inode;
+	struct ouichefs_sb_info *sb_info;
+	struct ouichefs_inode_info *i_info;
+	struct ouichefs_file_index_block *file_block, *data_block;
+	struct ouichefs_hashtable *hashtable;
+	static struct buffer_head *bh, *b;
 
-	for (i = 0; i < 1024; i++)
-		blocks[i] = 0;
-
-	pr_info("before list\n");
+	hashtable = kmalloc(sizeof(struct ouichefs_hashtable), GFP_KERNEL);
+	INIT_LIST_HEAD(&hashtable->hash_list);
+	memset(hashtable->hash, 0, sizeof(hashtable->hash));
 
 	sb_info = OUICHEFS_SB(sb);
-	i_free_bitmap = sb_info->i_free_bitmap;
+	i_free_bitmap = sb_info->ifree_bitmap;
 	nr_used_inodes = sb_info->nr_inodes - sb_info->nr_free_inodes;
 
 	offset = 0;
+	pr_info("Before for : nr_used_inodes = %d\n", nr_used_inodes);
 	for (i = 0; i < nr_used_inodes ; i++) {
 		ino = find_next_zero_bit(i_free_bitmap, sb_info->nr_inodes, offset);
 		inode = ouichefs_iget(sb, ino);
 		i_info = OUICHEFS_INODE(inode);
-
-		if(S_ISDIR(inode->imode)) {
-		} else if (S_ISREG(inode->imode)) {
+		pr_info("Before isreg = %d\n", inode->i_mode);
+		if (S_ISREG(inode->i_mode)) {
+			pr_info("isreg\n");
 			bh = sb_bread(sb, i_info->index_block);
-			file_block = (struct ouichefs_file_index_block *)bh->data;
-			while (file_block->blocks[j] != 0){
+			file_block = (struct ouichefs_file_index_block *)bh->b_data;
+			for (j = 0; j < inode->i_blocks - 2; j++){
 				b = sb_bread(sb, file_block->blocks[j]);
-				if (fct de recherche dans la liste de blocs search(b...) ) {
-
-				} else {
-
+				data_block =
+					(struct ouichefs_file_index_block *)b->b_data;
+				
+				struct ouichefs_hashtable *h;
+				added = 0;
+				list_for_each_entry(h, &hashtable->hash_list, hash_list){
+					pr_info("Hash tested : %s = %s ?\n", h->hash, data_block->hash);
+					if (strcmp(h->hash, data_block->hash) == 0){
+						pr_info("Same hash found : %s = %s\n", h->hash, data_block->hash);
+						struct ouichefs_block *new_block;
+						new_block = create_new_block(file_block->blocks[j]);
+						list_add_tail(&new_block->block_list, &h->block_head->block_list);
+						added = 1;
+						break;
+					}
 				}
-				j++;
+				if (added == 0){
+					struct ouichefs_hashtable *new_hashtable;
+					struct ouichefs_block *new_block;
+					
+					new_hashtable =	create_new_hashtable(data_block->hash); /* hash des données */
+					new_block = create_new_block(file_block->blocks[j]); /* numero du bloc */
+					list_add_tail(&new_hashtable->hash_list, &hashtable->hash_list);
+					list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
+				}
+
+				
 			}
-		} else {
-			pr_warn("Error : wrong i_mode\n");
 		}
-
-
 	}
-
-	list_for_each_entry(inode, &sb->s_inodes, i_lru){
-		if (S_ISDIR(inode->i_mode))
-			continue;
-
-		info = OUICHEFS_INODE(inode);
-		index_block = info->index_block;
-		bh = sb_bread(sb, index_block);
-		pr_info("Bloc index %d : ", index_block);
-
-		i = 0;
-		for (i = 0; i < inode->i_blocks; i++)
-			pr_info("%d ", bh->b_data[i]);
- 		pr_info("\n");
-	}
-	
-} */
+	//	kfree(hashtable);
+}
 
 /*
  * Mount a ouiche_fs partition
@@ -105,9 +143,9 @@ struct dentry *ouichefs_mount(struct file_system_type *fs_type, int flags,
  */
 void ouichefs_kill_sb(struct super_block *sb)
 {
-  //deduplicate_blocks(sb);
+	deduplicate_blocks(sb);
 	kill_block_super(sb);
-	brelse(bh);
+	//	brelse(bh);
 
 	pr_info("unmounted disk\n");
 }
