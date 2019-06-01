@@ -1,4 +1,4 @@
 #!/bin/sh
 
 insmod ouichefs.ko
-mount ouichefs.img /mnt
+mount ../ouichefs.img /mnt
