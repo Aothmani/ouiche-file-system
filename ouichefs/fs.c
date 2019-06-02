@@ -87,7 +87,6 @@ void deduplicate_blocks(struct super_block *sb)
 			bh = sb_bread(sb, i_info->index_block);
 			file_block = (struct ouichefs_file_index_block *)bh->b_data;
 			pr_info("number of blocks of file inode = %d\n", inode->i_blocks);
-			pr_info("i_blocks = %d\n", inode->i_blocks);
 			if(inode->i_blocks > 2){
 				for (j = 0; j < inode->i_blocks - 2; j++){
 					pr_info("j = %d, i_blocks = %d\n", j, inode->i_blocks - 2);
