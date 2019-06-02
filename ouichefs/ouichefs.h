@@ -78,7 +78,6 @@ struct ouichefs_sb_info {
 };
 
 struct ouichefs_file_index_block {
-        char hash[SHA256_BLOCK_SIZE];            /* Hash of blocks */
 	uint32_t blocks[OUICHEFS_BLOCK_SIZE >> 2];
 };
 
