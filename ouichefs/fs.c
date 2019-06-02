@@ -87,35 +87,38 @@ void deduplicate_blocks(struct super_block *sb)
 			bh = sb_bread(sb, i_info->index_block);
 			file_block = (struct ouichefs_file_index_block *)bh->b_data;
 			pr_info("number of blocks of file inode = %d\n", inode->i_blocks);
-			for (j = 0; j < inode->i_blocks - 2; j++){
-				b = sb_bread(sb, file_block->blocks[j]);
-				data_block =
-					(struct ouichefs_file_index_block *)b->b_data;
+			pr_info("i_blocks = %d\n", inode->i_blocks);
+			if(inode->i_blocks > 2){
+				for (j = 0; j < inode->i_blocks - 2; j++){
+					pr_info("j = %d, i_blocks = %d\n", j, inode->i_blocks - 2);
+					b = sb_bread(sb, file_block->blocks[j]);
+					data_block =
+						(struct ouichefs_file_index_block *)b->b_data;
 				
-				struct ouichefs_hashtable *h;
-				added = 0;
-				list_for_each_entry(h, &hashtable->hash_list, hash_list){
-					pr_info("Hash tested : %s = %s ?\n", h->hash, data_block->hash);
-					if (strcmp(h->hash, data_block->hash) == 0){
-						pr_info("Same hash found : %s = %s\n", h->hash, data_block->hash);
+					struct ouichefs_hashtable *h;
+					added = 0;
+					list_for_each_entry(h, &hashtable->hash_list, hash_list){
+						pr_info("Hash tested : %s = %s ?\n", h->hash, data_block->hash);
+						if (strcmp(h->hash, data_block->hash) == 0){
+							pr_info("Same hash found : %s = %s\n", h->hash, data_block->hash);
+							struct ouichefs_block *new_block;
+							pr_info("new bloc added : %d\n", file_block->blocks[j]);
+							new_block = create_new_block(file_block->blocks[j]);
+							list_add_tail(&new_block->block_list, &h->block_head->block_list);
+							added = 1;
+							break;
+						}
+					}
+					if (added == 0){
+						struct ouichefs_hashtable *new_hashtable;
 						struct ouichefs_block *new_block;
-						new_block = create_new_block(file_block->blocks[j]);
-						list_add_tail(&new_block->block_list, &h->block_head->block_list);
-						added = 1;
-						break;
+					
+						new_hashtable =	create_new_hashtable(data_block->hash); /* hash des données */
+						new_block = create_new_block(file_block->blocks[j]); /* numero du bloc */
+						list_add_tail(&new_hashtable->hash_list, &hashtable->hash_list);
+						list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
 					}
 				}
-				if (added == 0){
-					struct ouichefs_hashtable *new_hashtable;
-					struct ouichefs_block *new_block;
-					
-					new_hashtable =	create_new_hashtable(data_block->hash); /* hash des données */
-					new_block = create_new_block(file_block->blocks[j]); /* numero du bloc */
-					list_add_tail(&new_hashtable->hash_list, &hashtable->hash_list);
-					list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
-				}
-
-				
 			}
 		}
 	}
