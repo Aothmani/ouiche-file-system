@@ -47,6 +47,8 @@ static void deduplicate_blocks(struct super_block *sb,
         struct ouichefs_sb_info* sbi;
         sbi = OUICHEFS_SB(sb);
 
+	(sbi->ref_table[source])++;
+	
         // free block from inode
         put_block(sbi, *target);
         *target = source;
