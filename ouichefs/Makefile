@@ -1,7 +1,7 @@
 obj-m += ouichefs.o
-ouichefs-objs := fs.o super.o inode.o file.o dir.o
+ouichefs-objs := fs.o super.o inode.o file.o dir.o sha256.o
 
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+KERNELDIR ?= ../../linux-4.19.3
 
 all:
 	make -C $(KERNELDIR) M=$(PWD) modules

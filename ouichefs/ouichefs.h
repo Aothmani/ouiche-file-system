@@ -4,8 +4,11 @@
  *
  * Copyright (C) 2018 Redha Gouicem <redha.gouicem@lip6.fr>
  */
+
 #ifndef _OUICHEFS_H
 #define _OUICHEFS_H
+
+#include "sha256.h"
 
 #define OUICHEFS_MAGIC  0x48434957
 
