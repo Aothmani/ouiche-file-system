@@ -61,6 +61,7 @@ static inline uint32_t get_free_block(struct ouichefs_sb_info *sbi)
 		sbi->nr_free_blocks--;
 		pr_debug("%s:%d: allocated block %u\n",
 			 __func__, __LINE__, ret);
+		sbi->ref_table[ret] = 1;
 	}
 	return ret;
 }

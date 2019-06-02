@@ -30,6 +30,7 @@ static int ouichefs_file_get_block(struct inode *inode, sector_t iblock,
 	struct ouichefs_file_index_block *index;
 	struct buffer_head *bh_index;
 	bool alloc = false;
+	uint8_t ref;
 	int ret = 0, bno;
 
 	/* If block number exceeds filesize, fail */
@@ -58,6 +59,19 @@ static int ouichefs_file_get_block(struct inode *inode, sector_t iblock,
 		alloc = true;
 	} else {
 		bno = index->blocks[iblock];
+		ref = sbi->ref_table[bno];
+		if (ref > 1){
+			/* alloue un nouveau bloc */
+			if (!create)
+				return 0;
+			bno = get_free_block(sbi);
+			if (!bno) {
+				ret = -ENOSPC;
+				goto brelse_index;
+			}
+			index->blocks[iblock] = bno;
+			alloc = true;
+		}
 	}
 
 	/* Map the physical block to to the given buffer_head */
@@ -136,8 +150,9 @@ static int ouichefs_write_end(struct file *file, struct address_space *mapping,
 	struct inode *inode = file->f_inode;
 	struct ouichefs_inode_info *ci = OUICHEFS_INODE(inode);
 	struct super_block *sb = inode->i_sb;
-
+	
 	/* Complete the write() */
+	
 	ret = generic_write_end(file, mapping, pos, len, copied, page, fsdata);
 	if (ret < len) {
 		pr_err("%s:%d: wrote less than asked... what do I do? nothing for now...\n",
@@ -167,7 +182,7 @@ static int ouichefs_write_end(struct file *file, struct address_space *mapping,
 				       nr_blocks_old - inode->i_blocks);
 				goto end;
 			}
-			index = (struct ouichefs_file_index_block *)
+			index = (struct ouichefs_file_index_block *)*
 				bh_index->b_data;
 
 			for (i = inode->i_blocks - 2; i < nr_blocks_old - 2;
