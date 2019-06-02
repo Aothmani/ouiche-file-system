@@ -1,5 +1,5 @@
 obj-m += ouichefs.o
-ouichefs-objs := fs.o super.o inode.o file.o dir.o sha256.o
+ouichefs-objs := fs.o super.o inode.o file.o dir.o sha256.o sysfs.o dedup.o
 
 KERNELDIR ?= ../../linux-4.19.3
 
