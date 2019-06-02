@@ -159,6 +159,7 @@ void deduplicate_blocks(struct super_block *sb)
 	int offset, ino, index_block, nr_used_inodes, blockno;
 	unsigned long *i_free_bitmap;
 	char hash[SHA256_BLOCK_SIZE];
+        uint32_t inode_isize;
 
 	struct inode *inode;
 	struct ouichefs_sb_info *sb_info;
@@ -180,42 +181,18 @@ void deduplicate_blocks(struct super_block *sb)
 		pr_info("ino = %d\n", ino);
 		inode = ouichefs_iget(sb, ino);
 		i_info = OUICHEFS_INODE(inode);
+                inode_isize = inode_isize;
 		if (S_ISREG(inode->i_mode)) {
 			pr_info("isreg\n");
 			bh = sb_bread(sb, i_info->index_block);
 			file_block = (struct ouichefs_file_index_block *)bh->b_data;
 			pr_info("number of blocks of file inode = %d\n", inode->i_blocks);
-//			if (inode->i_blocks > 2){
-				for (j = 0; j < inode->i_blocks - 2; j++){
-                                        pr_info("j: %d\n", j);
-					b = sb_bread(sb, file_block->blocks[j]);
-					hash_data(b->b_data, hash, OUICHEFS_BLOCK_SIZE);
-
-					struct ouichefs_hashtable *h;
-					added = 0;
-					list_for_each_entry(h, &hashtable.hash_list, hash_list){
-						pr_info("Hash tested : %x = %x ?\n", h->hash[0], hash[0]);
-						if (strncmp(h->hash, hash, SHA256_BLOCK_SIZE) == 0){
-							pr_info("Same hash found : %x = %x\n", h->hash[0], hash[0]);
-							struct ouichefs_block *new_block;
-							new_block = create_new_block(file_block->blocks[j]);
-							list_add_tail(&new_block->block_list, &h->block_head->block_list);
-							added = 1;
-							break;
-						}
-					}
-					if (added == 0){
-						struct ouichefs_hashtable *new_hashtable;
-						struct ouichefs_block *new_block;
-
-						new_hashtable =	create_new_hashtable(hash); /* hash des données */
-						new_block = create_new_block(file_block->blocks[j]); /* numero du bloc */
-						list_add_tail(&new_hashtable->hash_list, &hashtable.hash_list);
-						list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
-					}
-				}
+                        for (j = 0; j < inode->i_blocks - 2; j++){
+                                pr_info("j: %d\n", j);
                                 b = sb_bread(sb, file_block->blocks[j]);
-                                hash_data(b->b_data, hash, inode->i_size);
+                                hash_data(b->b_data, hash, OUICHEFS_BLOCK_SIZE);
+                                inode_isize -= OUICHEFS_BLOCK_SIZE;
+
                                 struct ouichefs_hashtable *h;
                                 added = 0;
                                 list_for_each_entry(h, &hashtable.hash_list, hash_list){
@@ -238,7 +215,31 @@ void deduplicate_blocks(struct super_block *sb)
                                         list_add_tail(&new_hashtable->hash_list, &hashtable.hash_list);
                                         list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
                                 }
-			//}
+                        }
+                        b = sb_bread(sb, file_block->blocks[j]);
+                        hash_data(b->b_data, hash, inode_isize);
+                        struct ouichefs_hashtable *h;
+                        added = 0;
+                        list_for_each_entry(h, &hashtable.hash_list, hash_list){
+                                pr_info("Hash tested : %x = %x ?\n", h->hash[0], hash[0]);
+                                if (strncmp(h->hash, hash, SHA256_BLOCK_SIZE) == 0){
+                                        pr_info("Same hash found : %x = %x\n", h->hash[0], hash[0]);
+                                        struct ouichefs_block *new_block;
+                                        new_block = create_new_block(file_block->blocks[j]);
+                                        list_add_tail(&new_block->block_list, &h->block_head->block_list);
+                                        added = 1;
+                                        break;
+                                }
+                        }
+                        if (added == 0){
+                                struct ouichefs_hashtable *new_hashtable;
+                                struct ouichefs_block *new_block;
+
+                                new_hashtable =	create_new_hashtable(hash); /* hash des données */
+                                new_block = create_new_block(file_block->blocks[j]); /* numero du bloc */
+                                list_add_tail(&new_hashtable->hash_list, &hashtable.hash_list);
+                                list_add_tail(&new_block->block_list, &new_hashtable->block_head->block_list);
+                        }
 		}
 	}
 	//	kfree(hashtable);
