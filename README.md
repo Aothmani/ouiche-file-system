@@ -28,7 +28,7 @@ Nous avons décidé de hasher le contenu des blocs **utilisés** uniquement. Pou
 * S'il n'est pas présent, nous ajoutons une entrée dans la liste contenant le hash et le numéro du bloc hashé
 * S'il est présent, il y a une collision, cela signifie qu'un autre bloc possède les mêmes données. Nous remplaçons alors dans son inode le numéro du bloc de données en double par le numéro du bloc déjà existant, puis le libérons. Les deux inodes possèdent désormais le même bloc de données.
 
-Voici la structure représentant notre hash_list
+Voici la structure représentant notre hash_list :
 ```
 static struct ouichefs_hashtable {
 	struct list_head hash_list;
