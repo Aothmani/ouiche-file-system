@@ -35,7 +35,7 @@ $ [loop0]
 
 Le résultat obtenu est une liste d'inodes par disque monté.
 Pour chaque inode, nous avons son type `F` pour fichier `D` pour dossier,
-son numéro d'inode entre crochets et les numéros de bloc>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1s associés.
+son numéro d'inode entre crochets et les numéros de blocs associés.
 
 # Déduplication de blocs
 
