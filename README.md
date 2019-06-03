@@ -43,3 +43,9 @@ static struct ouichefs_hashtable {
 `blockno`: le numéro de bloc possédant les données hashées
 
 La recherche dans la hashlist a une complexité en *O(N)*, c'est pourquoi nous avons choisi cette structure.
+
+# Copie sur écriture
+
+Le but de cet exercice est d'implémenter un système de compteur sur les blocs. Si un bloc est utilisé par plus d'un fichier, et que l'on modifie un des fichiers, on ne souhaite pas répercuter les changements sur les autres. 
+
+Notre première approche a été d'ajouter une `struct kref`pour chaque bloc. Nous avons donc ajouté un tableau de `struct kref`de taille `nr_blocks`,dans la structure `ouichefs_sb_info`.
