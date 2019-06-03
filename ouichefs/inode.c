@@ -365,19 +365,21 @@ static int ouichefs_unlink(struct inode *dir, struct dentry *dentry)
 	for (i = 0; i < inode->i_blocks - 1; i++) {
 		char *block;
 
+                /*
 		if (sbi->ref_table[file_block->blocks[i]] == 1){
 			(sbi->ref_table[file_block->blocks[i]])--;
-		
+                        */
+
 			put_block(sbi, file_block->blocks[i]);
 			bh2 = sb_bread(sb, file_block->blocks[i]);
 			if (!bh2)
 				continue;
 			block = (char *)bh2->b_data;
-		
+
 			memset(block, 0, OUICHEFS_BLOCK_SIZE);
 			mark_buffer_dirty(bh2);
 			brelse(bh2);
-		}
+		/*}*/
 	}
 
 scrub:

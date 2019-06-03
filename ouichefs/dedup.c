@@ -5,7 +5,7 @@
 /* Au début on a voulu une hashtable mais
  * une liste est plus pratique vu le nombre d'inode
  */
-static struct ouichefs_hashtable {
+struct ouichefs_hashtable {
 	struct list_head hash_list;
 	char hash[SHA256_BLOCK_SIZE];
         uint32_t blockno;
@@ -47,8 +47,8 @@ static void deduplicate_blocks(struct super_block *sb,
         struct ouichefs_sb_info* sbi;
         sbi = OUICHEFS_SB(sb);
 
-	(sbi->ref_table[source])++;
-	
+	//(sbi->ref_table[source])++;
+
         // free block from inode
         put_block(sbi, *target);
         *target = source;
@@ -61,12 +61,12 @@ static void treat_block(uint32_t j, struct ouichefs_file_index_block* file_block
 	char hash[SHA256_BLOCK_SIZE];
 
         static struct buffer_head *b;
+        struct ouichefs_hashtable *h;
 
         pr_info("j: %d\n", j);
         b = sb_bread(sb, file_block->blocks[j]);
         hash_data(b->b_data, hash, len);
 
-        struct ouichefs_hashtable *h;
         added = 0;
         list_for_each_entry(h, &hashtable.hash_list, hash_list){
                 pr_info("Hash tested : %x = %x ?\n", h->hash[0], hash[0]);
@@ -91,9 +91,7 @@ static void treat_block(uint32_t j, struct ouichefs_file_index_block* file_block
 /* Treatement de l'inode */
 static void treat_inode(uint32_t ino) {
 
-	int i, j, added;
-        int blockno;
-        int index_block;
+	int j;
         uint32_t inode_isize;
 
         struct inode* inode;
@@ -110,7 +108,7 @@ static void treat_inode(uint32_t ino) {
                 pr_info("isreg\n");
                 bh = sb_bread(sb, i_info->index_block);
                 file_block = (struct ouichefs_file_index_block *)bh->b_data;
-                pr_info("number of blocks of file inode = %d\n", inode->i_blocks);
+                pr_info("number of blocks of file inode = %ld\n", inode->i_blocks);
                 for (j = 0; j < inode->i_blocks - 2; j++){
                     /* Traitement du block */
                     inode_isize -= OUICHEFS_BLOCK_SIZE;
