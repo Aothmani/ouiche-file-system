@@ -52,9 +52,9 @@ Pour ce faire:
 * S'il n'est pas présent, nous ajoutons une entrée dans la liste contenant le hash et le numéro du bloc hashé
 * S'il est présent, il y a une collision, cela signifie qu'un autre bloc possède les mêmes données. Nous remplaçons alors dans l'inode le numéro du bloc de données en double par le numéro du bloc déjà existant, puis le libérons. Les deux inodes possèdent désormais le même bloc de données.
 
-Voici la structure représentant notre hash_list
 
 ```c
+>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1
 static struct ouichefs_hashtable {
 	struct list_head hash_list;
 	char hash[SHA256_BLOCK_SIZE];
@@ -68,6 +68,7 @@ static struct ouichefs_hashtable {
 
 `blockno`: le numéro de bloc possédant les données hashées
 
+<<<<<<< HEAD
 La fonction de hashage utilisé est le sha256, qui renvoi une valeur de 256 bits facilement comparable.
 La recherche dans la hashlist a une complexité en *O(N)*, nous avons choisis cette complexité car elle plus simple d'implémentation avec peu d'erreur et aucune (ou presques) collision entre les hash. Ainsi que le gain en performance.
 
