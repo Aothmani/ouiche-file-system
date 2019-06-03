@@ -1,6 +1,7 @@
 # PNL-2019
 
 * Ulysse FONTAINE (3520203)
+* Anthony OTHMANI (3200072)
 
 # Setup ouichefs
 
@@ -11,14 +12,14 @@ dd if=/dev/zero of=ouichefs.img bs=1M count=50
 mkfs.ouichfs ouichefs.img
 ```
 
-Pour monter et démonter le system de fichier utilisez les scripts `mnt.sh` et
+Pour monter et démonter le système de fichier, utilisez les scripts `mnt.sh` et
 `unmnt.sh`.
 
-L'image à monter doit se nommer `ouichefs.img` et se trouver à coter des scripts.
+L'image à monter doit se nommer `ouichefs.img` et se trouver à côté des scripts.
 
 # Sysfs
 
-Nous avons créé un `sysfs` pour pouvoir lister l'ensemble des block utilisé pour
+Nous avons créé un `sysfs` pour pouvoir lister l'ensemble des blocs utilisés pour
 chaque inode du système de fichier:
 
 Utilisez cette commande après montage du module:
@@ -32,9 +33,9 @@ $ [loop0]
 
 ```
 
-Le résultat obtenu est une liste d'inode par disque monté.
-Pour chaques inode nous avons son type `F` pour fichier `D` pour directory,
-son numéro d'inode entre crochet et les numéros de blocks associés.
+Le résultat obtenu est une liste d'inodes par disque monté.
+Pour chaque inode, nous avons son type `F` pour fichier `D` pour dossier,
+son numéro d'inode entre crochets et les numéros de bloc>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1>>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1s associés.
 
 # Déduplication de blocs
 
@@ -54,7 +55,6 @@ Pour ce faire:
 
 
 ```c
->>>>>>> 3bbb859973ad9b3eaa6cf5834171bc9b153e17d1
 static struct ouichefs_hashtable {
 	struct list_head hash_list;
 	char hash[SHA256_BLOCK_SIZE];
@@ -68,18 +68,17 @@ static struct ouichefs_hashtable {
 
 `blockno`: le numéro de bloc possédant les données hashées
 
-<<<<<<< HEAD
-La fonction de hashage utilisé est le sha256, qui renvoi une valeur de 256 bits facilement comparable.
-La recherche dans la hashlist a une complexité en *O(N)*, nous avons choisis cette complexité car elle plus simple d'implémentation avec peu d'erreur et aucune (ou presques) collision entre les hash. Ainsi que le gain en performance.
+
+La fonction de hashage utilisée est le sha256, qui renvoie une valeur de 256 bits facilement comparables.
+La recherche dans la hashlist a une complexité en *O(N)*. Nous avons choisi cette complexité car elle plus simple d'implémentation avec peu d'erreurs et aucune (ou presque) collision entre les hash. Ainsi que le gain en performance.
 
 
 # Copie sur ecriture
 
 Le but de cet exercice est d'implémenter un système de compteur sur les blocs. Si un bloc est utilisé par plus d'un fichier, et que l'on modifie un des fichiers, on ne souhaite pas répercuter les changements sur les autres.
 
-Nous avons tanté la création d'une structure en dure dans le super_block permettant d'enregistrer le nombre de block utilisé par chaques inodes.
-Nous avons dans un premier temps tenter d'utiliser des structures kref dans le superblock. A cause de l'aspect dynamique (libération de la référence donc kfree) qui ne collais pas à notre implémentation
-nous nous sommes alors tourné vers un simple tableau d'entiers et avons cherché à effectuer la libération du block à la main.
+Nous avons tenté la création d'une structure en dur dans le super_block permettant d'enregistrer le nombre de blocs utilisés par chaques inode.
+Nous avons dans un premier temps tenté d'utiliser des structures kref dans le superblock. A cause de l'aspect dynamique (libération de la référence donc kfree) qui ne collait pas à notre implémentation nous nous sommes alors tourné vers un simple tableau d'entiers et avons cherché à effectuer la libération du bloc à la main.
 
 
 La difficulté de modifier le mkfs ne nous a empêché de teste notre implémentation.
