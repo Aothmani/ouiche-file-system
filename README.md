@@ -52,7 +52,7 @@ Pour ce faire:
 * Pour chaque bloc de données, nous le hashons, puis nous cherchons si le hash est contenu dans la hashlist
 * S'il n'est pas présent, nous ajoutons une entrée dans la liste contenant le hash et le numéro du bloc hashé
 * S'il est présent, il y a une collision, cela signifie qu'un autre bloc possède les mêmes données. Nous remplaçons alors dans l'inode le numéro du bloc de données en double par le numéro du bloc déjà existant, puis le libérons. Les deux inodes possèdent désormais le même bloc de données.
-
+* Le traitement des blocs incomplets (les données n'utilisent pas l'intégralité du bloc) se fait naturellement car nous cumulons en mémoire la taille des blocs déjà traités. Ainsi, avec la différence de la taille du fichier complet avec celle que l'on cumule, nous obtenus la taille des données pertinentes. La fonction de hash ne va ahsher que sur cette taille.
 
 ```c
 static struct ouichefs_hashtable {
