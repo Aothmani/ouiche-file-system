@@ -41,12 +41,6 @@ son numéro d'inode entre crochets et les numéros de blocs associés.
 
 Pour dédupliquer les blocs, nous avons tout de suite cherché à éviter l'approche naïve consistant à comparer chaque bloc avec tous les autres. Ceci donnerait une complexité bien trop grande( O(n²) ).
 
-
-****************
-Nous avons décidé de hasher le contenu des blocs **utilisés** uniquement. Pour déterminer si un bloc est utilisé, nous avons récupéré les inodes utilisées via la `ifree_bitmap̀` contenue dans `ouichefs_sb_info`, et avons récupéré tous les blocs composant des fichiers. Nous avons choisi de hasher avec SHA256 pour ne comparer que 32 octets pour chaque bloc, au lieu des 4096 les composant. Nous avons ensuite construit une hashlist avec les hash calculés. Nous traitons les blocs complets "normalement", et le bloc restant n'est traité que partiellement (uniquement les données du fichier et non les résidus) grâce à la taille restante. L'algorithme est le suivant :
-**************
-
-
 Pour ce faire:
 
 * Pour chaque bloc de données, nous le hashons, puis nous cherchons si le hash est contenu dans la hashlist
