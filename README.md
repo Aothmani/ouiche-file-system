@@ -1,7 +1,7 @@
 # PNL-2019
 
-* Ulysse FONTAINE (3520203)
-* Anthony OTHMANI (3200072)
+* Ulysse FONTAINE 
+* Anthony OTHMANI 
 
 # Setup ouichefs
 
