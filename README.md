@@ -75,4 +75,4 @@ Nous avons tenté la création d'une structure en dur dans le super_block permet
 Nous avons dans un premier temps tenté d'utiliser des structures kref dans le superblock. A cause de l'aspect dynamique (libération de la référence donc kfree) qui ne collait pas à notre implémentation nous nous sommes alors tourné vers un simple tableau d'entiers et avons cherché à effectuer la libération du bloc à la main.
 
 
-La difficulté de modifier le mkfs ne nous a empêché de teste notre implémentation.
+La difficulté de modifier le mkfs nous a empêché de tester notre implémentation.
