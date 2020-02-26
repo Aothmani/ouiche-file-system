@@ -5,7 +5,7 @@
 
 # Setup ouichefs
 
-On créé une image de 50Mo pour le filesystem:
+On crée une image de 50Mo pour le filesystem:
 
 ```
 dd if=/dev/zero of=ouichefs.img bs=1M count=50
